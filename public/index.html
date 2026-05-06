@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GeoGuessr Clone</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="game.js"></script>
+</head>
+
+<body>
+
+    <!-- HOME SCREEN -->
+    <div id="homeScreen">
+        <h1>This is the Home screen</h1>
+        <button onclick="showScreen('gameScreen')">Play</button>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="gameScreen" style="display:none;">
+        <h2>Street View</h2>
+        <button onclick="showScreen('homeScreen')">Back</button>
+
+        <div class="gameParent">
+            <div id="pano" class="gameChild"></div>
+            <div id="guessMap" class="gameChild-2"></div>
+            <button id="guessButton" class="gameChild-2">Guess</button>
+        </div>
+    </div>
+
+    <!-- Load Google Maps API once -->
+    <script>
+        async function loadMaps() {
+            const res = await fetch("http://localhost:5000/config");
+            const data = await res.json();
+            const key = data.google_key;
+
+            const script = document.createElement("script");
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&callback=initAll`;
+            script.async = true;
+            document.head.appendChild(script);
+        }
+
+        loadMaps();
+    </script>
+
+</body>
+</html>
