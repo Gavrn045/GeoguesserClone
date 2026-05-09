@@ -5,12 +5,15 @@ let guessMarker;
 //conect to FlaskSocketIo
 const socket = io("http://localhost:5000");
 
-// When connected
+// SOCKET FUNCTIONS
 socket.on("connect", () => {
     console.log("Connected to Flask server");
 });
 
-
+socket.on("newLocation", (data) =>{
+    console.log("updating panorama with new location "+data.lat+" "+data.lng);
+    updatePanorama(data.lat, data.lng);
+});
 
 // MUST be global so Google can call it
 function initStreetView() {
@@ -32,6 +35,7 @@ function initStreetView() {
 }
 
 function initMap() {
+    guessMarker = null;
     guessMap = new google.maps.Map(
         document.getElementById("guessMap"),
         {
@@ -93,6 +97,8 @@ function updatePanorama(lat, lng) {
     panorama.setZoom(1);
 }
 
+//BUTTON FUNCTIONS
+
 function showScreen(id) {
     document.getElementById("homeScreen").style.display = "none";
     document.getElementById("gameScreen").style.display = "none";
@@ -102,5 +108,19 @@ function showScreen(id) {
         google.maps.event.trigger(guessMap, "resize");
         guessMap.setCenter({ lat: 20, lng: 0 });
     }
+}
+
+function requestLocation(){
+    socket.emit("request_location");
+}
+
+function makeGuess(){
+    console.log("test 1");
+    if(guessMarker == null){
+        return;
+    }
+    socket.emit("guess_made", {
+        position : guessMarker.position
+    });
 }
 

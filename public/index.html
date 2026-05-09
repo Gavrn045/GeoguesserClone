@@ -19,11 +19,12 @@
     <div id="gameScreen" style="display:none;">
         <h2>Street View</h2>
         <button onclick="showScreen('homeScreen')">Back</button>
+        <button onclick="requestLocation()">New Round</button>
 
         <div class="gameParent">
             <div id="pano" class="gameChild"></div>
             <div id="guessMap" class="gameChild-2"></div>
-            <button id="guessButton" class="gameChild-2">Guess</button>
+            <button id="guessButton" class="gameChild-2" onclick="makeGuess()">Guess</button>
         </div>
     </div>
 
