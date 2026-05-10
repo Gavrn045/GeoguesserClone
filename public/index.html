@@ -12,7 +12,13 @@
     <!-- HOME SCREEN -->
     <div id="homeScreen">
         <h1>This is the Home screen</h1>
-        <button onclick="showScreen('gameScreen')">Play</button>
+        <div id="choices">
+            <input type="radio" name="modeChoice" value="City" id="cityChoice">
+            <label for="cityChoice">City</label>
+            <input type="radio" name="modeChoice" value="World" id="worldChoice">
+            <label for="worldChoice">World</label>
+        </div>
+        <button onclick="startGame()">Play</button>
     </div>
 
     <!-- GAME SCREEN -->

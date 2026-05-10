@@ -1,6 +1,7 @@
 let panorama;
 let guessMap;
 let guessMarker;
+let gameMode = 0;
 
 //conect to FlaskSocketIo
 const socket = io("http://localhost:5000");
@@ -15,6 +16,11 @@ socket.on("newLocation", (data) =>{
     updatePanorama(data.lat, data.lng);
 });
 
+socket.on("startingGame",(data)=>{
+    updatePanorama(data.lat, data.lng);
+    showScreen('gameScreen');
+})
+
 // MUST be global so Google can call it
 function initStreetView() {
     console.log("Google Maps API loaded — initializing Street View");
@@ -22,7 +28,7 @@ function initStreetView() {
     panorama = new google.maps.StreetViewPanorama(
         document.getElementById("pano"),
         {
-            position: { lat: 43.4060164, lng: -80.5158004 },
+            position: { lat: 0, lng: 0 },
             pov: { heading: 0, pitch: 0 },
             zoom: 1,
             addressControl: false,
@@ -99,6 +105,32 @@ function updatePanorama(lat, lng) {
 
 //BUTTON FUNCTIONS
 
+function startGame(){
+    let val;
+    const radios = document.getElementsByName("modeChoice");
+    radios.forEach(radio => {
+        console.log(radio.value,radio.checked);
+        if(radio.checked){
+            val = radio.value;
+        }
+    });
+
+    switch(val){
+        case "City":
+            gameMode = 1;
+            break;
+        case "World":
+            gameMode = 2;
+            break;
+    }
+    console.log(val,gameMode);
+    if(gameMode != 0){
+        socket.emit("start_game", {
+            gameMode:gameMode
+        });
+    }
+}
+
 function showScreen(id) {
     document.getElementById("homeScreen").style.display = "none";
     document.getElementById("gameScreen").style.display = "none";
@@ -115,7 +147,6 @@ function requestLocation(){
 }
 
 function makeGuess(){
-    console.log("test 1");
     if(guessMarker == null){
         return;
     }
