@@ -43,7 +43,7 @@ def on_request_location():
     #gets a location and increments the num
     location_num += 1
     coord = locations[location_num]
-    emit("newLocation", {"lat": coord[0], "lng": coord[1]})
+    emit("newLocation", {"lat": coord[0], "lng": coord[1], "country":coord[2]})
 
 @socketio.on("start_game")
 def on_start_game(data):
@@ -95,7 +95,7 @@ def get_locations(mode):
     global locations
     #changes file based on mode
     if mode == 1:
-        file_name = "locations1.txt"
+        file_name = "map.txt"
     elif mode == 2:
         file_name = "locations2.txt"
     
@@ -103,7 +103,7 @@ def get_locations(mode):
     with open(file_name, mode="r") as f1:
         for line in f1.readlines():
             tokens = line.split("\t")
-            c = (float(tokens[0]), float(tokens[1]))
+            c = (float(tokens[1]), float(tokens[2]),tokens[0])
             locations.append(c)
     #randomizes order
     shuffle(locations)

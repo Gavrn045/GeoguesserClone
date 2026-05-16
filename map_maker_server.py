@@ -1,8 +1,10 @@
+import os
+
 from flask import Flask, jsonify, make_response, send_from_directory
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, emit
 
 
-app = Flask(__name__, static_folder="public")
+app = Flask(__name__, static_folder="publicGenerator")
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 @app.route("/")
@@ -13,10 +15,19 @@ def index():
 def static_files(path):
     return send_from_directory("publicGenerator", path)
 
-
 @socketio.on("connect")
 def on_connect():
+    emit("key", {"apiKey" : os.getenv("MAPS_API_KEY")})
     print("Client connected")
+
+@socketio.on("location_chunk")
+def on_location_chunk(data):
+    country = data["country"]
+    points = data["points"]
+    print(country, points)
+    with open("map.txt", "a") as f:
+        for lat, lng in points:
+            f.write(f"{country}\t{lng}\t{lat}\n")
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000)

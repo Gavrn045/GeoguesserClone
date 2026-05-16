@@ -15,11 +15,11 @@ socket.on("connect", () => {
 });
 
 socket.on("newLocation", (data) =>{
-    console.log("updating panorama with new location "+data.lat+" "+data.lng);
+    console.log("updating panorama with new location "+data.lat+" "+data.lng +" "+data.name);
 
     //zooms map to city if the gamemode is for city
     if(gameMode == 1){
-        guessMap.setCenter({lat:43.455324,lng:-80.5194812});
+        guessMap.setCenter({lat:43.455324,lng:18});
         guessMap.setZoom(10);
     }
     guessMarker = null;
