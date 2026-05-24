@@ -3,3 +3,6 @@ old.py
 plan.txt
 locations1.txt
 geoBoundariesCGAZ_ADM0.geojson
+generator/package.json
+generator/package-lock.json
+generator/node_modules

@@ -17,15 +17,23 @@ def static_files(path):
 
 @socketio.on("connect")
 def on_connect():
-    emit("key", {"apiKey" : os.getenv("MAPS_API_KEY")})
+    countries=[]
+    with open("generator/countries.txt",mode='r') as f:
+        for line in f.readlines():
+            if(line.strip()=="==="):
+                break
+            countries.append(line.strip())
+
+    emit("key", {"apiKey" : os.getenv("MAPS_API_KEY"), "countries":countries})
     print("Client connected")
+    print(countries)
 
 @socketio.on("location_chunk")
 def on_location_chunk(data):
     country = data["country"]
     points = data["points"]
     print(country, points)
-    with open("map.txt", "a") as f:
+    with open("map_sa.txt", "a") as f:
         for lat, lng in points:
             f.write(f"{country}\t{lng}\t{lat}\n")
 

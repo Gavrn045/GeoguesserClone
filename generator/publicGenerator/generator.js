@@ -6,6 +6,7 @@ var geoJson;
 var apiKey;
 var svCache;
 var coarseCache;
+var countries;
 
 // SOCKET FUNCTIONS
 socket.on("connect", () => {
@@ -13,7 +14,9 @@ socket.on("connect", () => {
 });
 socket.on("key",(data)=>{
     //console.log(data.apiKey);
+    countries = data.countries;
     apiKey = data.apiKey;
+    console.log(countries);
 });
 
 /*================================
@@ -30,35 +33,46 @@ window.loadGeoJSON = async function() {
 async function test(){
     // var geometry = geoJson.features[3].geometry;
     // console.log(getBoundingBoxes(getOuterRings(geometry)));
-    const countries = ["Republic of Serbia","Croatia","Montenegro","Bosnia and Herzegovina","Slovenia","North Macedonia"]
+    //const countries = ["Republic of Serbia","Croatia","Montenegro","Bosnia and Herzegovina","Slovenia","North Macedonia"];
+    //const countries = [];    
     var coords = new Map();
     console.log("Starting generation");
     for(let i=0;i<geoJson.features.length;i++){
         var element = geoJson.features[i];
-        // if(element.properties["ISO3166-1-Alpha-3"]==="-99"){
-        //     //console.log(element.properties["name"]);
-        // }
+        if(!(element.properties["ISO3166-1-Alpha-3"]==="-99")){
+            console.log(element.properties["name"]);
+        }
         if(countries.includes(element.properties["name"])){//countries to check
             //process features
             svCache = new Map();
             coarseCache = new Map();
-            var points = await getPoints(element, 3);
+            document.getElementById("cName").textContent = `${element.properties["name"]}:`;
+            var points = await getPoints(element, 100);
             // console.log(points);
             // console.log(svCache);
             // console.log(coarseCache);
-            coords.set(element.properties["name"], points);
+            //coords.set(element.properties["name"], points);
+            socket.emit("location_chunk", {
+                country: element.properties["name"],
+                points: points
+            });
         }
-    }
-    //console.log(coords);
-    for (const [country, points] of coords.entries()) {
-        socket.emit("location_chunk", {
-            country: country,
-            points: points
-        });
-        sleep(50);
     }
 }
 
+function test2(){
+    const lat = 13.733749269235833;
+    const lng = 100.54096005793264;
+    const iframe = document.getElementById("pano-iframe");
+    iframe.style.width = "80vw";   // 90% of viewport width
+    iframe.style.height = "calc(80vh + 285px)";
+    iframe.style.transform = "translateY(-285px)";
+    const url = `https://www.google.com/maps/embed/v1/streetview?key=${apiKey}&location=${lat},${lng}&fov=90&heading=0&pitch=0`;
+    iframe.src = url;
+    
+
+    addDiv.style.top = "200px";
+}
 
 async function getPoints(feature, numPoints){
     const bbox = turf.bbox(feature);
@@ -70,9 +84,10 @@ async function getPoints(feature, numPoints){
             if(await hasStreetView(pt.geometry.coordinates)){//point has streetview
                 console.log("found location");
                 points.push(pt.geometry.coordinates);
+                document.getElementById("counter").textContent = `${points.length}/100`;
             }
         }
-        sleep(10);//rate limiting
+        sleep(5);//rate limiting
     }
     return points;
 }
@@ -82,7 +97,9 @@ async function hasStreetView(coords) {
     const lat = coords[1];
 
     const key = `${lat.toFixed(4)},${lng.toFixed(4)}`;
-    const coarseKey = `${lat.toFixed(2)},${lng.toFixed(2)}`;
+    const coarseKey = `${lat.toFixed(2)},${lng.toFixed(2)}`;//1.1km
+    // const coarseKey = `${lat.toFixed(1)},${lng.toFixed(1)}`;//11km
+
 
     if (svCache.has(key)) {
         console.log("cached");
@@ -90,7 +107,7 @@ async function hasStreetView(coords) {
     }
 
     if (coarseCache.has(coarseKey) && coarseCache.get(coarseKey) === false) {
-        console.log("coarsed");
+        //console.log("coarsed");
         return false;
     }
     //nearest street view loop

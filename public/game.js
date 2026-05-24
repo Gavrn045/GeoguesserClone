@@ -3,7 +3,6 @@ let guessMap;
 let guessMarker;
 let correctMarker;
 let correctLine;
-let gameMode = 0;
 
 //conect to FlaskSocketIo
 const socket = io("http://localhost:5000");
@@ -15,13 +14,16 @@ socket.on("connect", () => {
 });
 
 socket.on("newLocation", (data) =>{
-    console.log("updating panorama with new location "+data.lat+" "+data.lng +" "+data.name);
+    console.log("updating panorama with new location "+data.lat+" "+data.lng +" "+data.country);
+
+    document.getElementById("scoreLabel").textContent = "";
+    document.getElementById("distanceLabel").textContent = "";
 
     //zooms map to city if the gamemode is for city
-    if(gameMode == 1){
-        guessMap.setCenter({lat:43.455324,lng:18});
-        guessMap.setZoom(10);
-    }
+    // if(gameMode == 1){
+    //     guessMap.setCenter({lat:43.455324,lng:18});
+    //     guessMap.setZoom(6);
+    // }
     guessMarker = null;
 
     updatePanorama(data.lat, data.lng);
@@ -38,7 +40,13 @@ socket.on("newLocation", (data) =>{
 socket.on("startingGame",(data)=>{
     socket.emit("request_location")
     showScreen('gameScreen');
-})
+});
+
+socket.on("scoreCalculated",(data)=>{
+    document.getElementById("scoreLabel").textContent = data.score;
+    document.getElementById("distanceLabel").textContent = data.distance;
+});
+
 
 // MUST be global so Google can call it
 function initStreetView() {
@@ -136,30 +144,17 @@ function updatePanorama(lat, lng) {
 
 //function for starting game
 function startGame(){
-    let val;
-    //gets the gamemode choice from user
-    const radios = document.getElementsByName("modeChoice");
-    radios.forEach(radio => {
-        console.log(radio.value,radio.checked);
-        if(radio.checked){
-            val = radio.value;
-        }
-    });
+    //gets the maps choice from user
+    const checked = document.querySelectorAll('input[name="map"]:checked');
+    const values = Array.from(checked).map(cb => cb.value);
+    
+    console.log(values);
 
-    //sets gamemode
-    switch(val){
-        case "City":
-            gameMode = 1;
-            break;
-        case "World":
-            gameMode = 2;
-            break;
-    }
-    console.log(val,gameMode);
+
     //starts game
-    if(gameMode != 0){
+    if(values.length>0){
         socket.emit("start_game", {
-            gameMode:gameMode
+            maps:values
         });
     }
 }
